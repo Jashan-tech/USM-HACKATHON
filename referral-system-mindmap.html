@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referral Completion System - Mind Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            color: #e2e8f0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-color: transparent;
+        }
+
+        #mindmap-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 800px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            position: relative;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover .node-bg {
+            filter: brightness(1.2);
+        }
+
+        .node-bg {
+            transition: all 0.3s ease;
+        }
+
+        .node-text {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .link {
+            fill: none;
+            stroke-width: 2;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+
+        .link:hover {
+            opacity: 1;
+            stroke-width: 3;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(96, 165, 250, 0.5);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .tooltip h3 {
+            color: #60a5fa;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .tooltip p {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .pulsing {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <h1>Referral Completion System</h1>
+    <p class="subtitle">Closed-Loop Referral Management MVP</p>
+    
+    <div class="controls">
+        <button class="btn active" onclick="expandAll()">Expand All</button>
+        <button class="btn" onclick="collapseAll()">Collapse All</button>
+        <button class="btn" onclick="resetView()">Reset View</button>
+        <button class="btn" onclick="toggleAnimation()">Toggle Animation</button>
+    </div>
+
+    <div id="mindmap-container">
+        <svg id="mindmap"></svg>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const data = {
+            name: "Referral\nCompletion\nSystem",
+            type: "root",
+            description: "Closed-loop referral management from creation to appointment booked",
+            children: [
+                {
+                    name: "Problem",
+                    type: "problem",
+                    description: "Manual and fragmented referral process causing delays and leakage",
+                    children: [
+                        {
+                            name: "Manual\nProcesses",
+                            type: "issue",
+                            description: "Fragmented workflows across docs, scheduling, eligibility, and prior auth"
+                        },
+                        {
+                            name: "Delays &\nMissed Appts",
+                            type: "issue",
+                            description: "Referrals fall through the cracks leading to missed appointments"
+                        },
+                        {
+                            name: "High Staff\nWorkload",
+                            type: "issue",
+                            description: "Manual coordination creates excessive administrative burden"
+                        },
+                        {
+                            name: "Poor\nVisibility",
+                            type: "issue",
+                            description: "No clear view of what's blocking referral completion"
+                        }
+                    ]
+                },
+                {
+                    name: "MVP Features",
+                    type: "solution",
+                    description: "Core capabilities to reduce leakage and speed up scheduling",
+                    children: [
+                        {
+                            name: "Referral\nTracking",
+                            type: "feature",
+                            description: "Create referrals, status updates, tasks, document upload, audit trail",
+                            children: [
+                                { name: "Status Updates", type: "subfeature", description: "Real-time referral status tracking" },
+                                { name: "Task Management", type: "subfeature", description: "Assign and track completion tasks" },
+                                { name: "Document Upload", type: "subfeature", description: "Centralized document management" },
+                                { name: "Audit Trail", type: "subfeature", description: "Complete history of all actions" }
+                            ]
+                        },
+                        {
+                            name: "Risk Factor\nScoring",
+                            type: "feature",
+                            description: "Flag likely-to-leak referrals with reasons and escalation reminders",
+                            children: [
+                                { name: "Leakage Prediction", type: "subfeature", description: "ML-based risk assessment" },
+                                { name: "Escalation Alerts", type: "subfeature", description: "Automated reminders for high-risk cases" }
+                            ]
+                        },
+                        {
+                            name: "Chat\nFeature",
+                            type: "feature",
+                            description: "Patient + staff messaging tied to each referral with templates",
+                            children: [
+                                { name: "Message Templates", type: "subfeature", description: "Pre-built communication templates" },
+                                { name: "Referral Context", type: "subfeature", description: "All messages linked to specific referral" }
+                            ]
+                        },
+                        {
+                            name: "AI Scheduling\nAgent",
+                            type: "feature",
+                            description: "Collects availability, suggests times, escalates when stuck",
+                            children: [
+                                { name: "Availability Collection", type: "subfeature", description: "Automated patient availability gathering" },
+                                { name: "Smart Suggestions", type: "subfeature", description: "AI-powered time slot recommendations" },
+                                { name: "Human Escalation", type: "subfeature", description: "Seamless handoff when needed" }
+                            ]
+                        },
+                        {
+                            name: "Insurance\nConstraints",
+                            type: "feature",
+                            description: "Capture insurance info + surface eligibility/prior-auth blockers",
+                            children: [
+                                { name: "Eligibility Check", type: "subfeature", description: "Automated insurance verification" },
+                                { name: "Prior Auth Tasks", type: "subfeature", description: "Checklist for authorization requirements" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "Target Users",
+                    type: "users",
+                    description: "First 100 users in referral-heavy clinics",
+                    children: [
+                        {
+                            name: "Specialist\nPractices",
+                            type: "icp-primary",
+                            description: "Best first target - referral coordinators, schedulers, insurance staff, practice managers",
+                            children: [
+                                { name: "Referral Coordinators", type: "role", description: "Manage incoming referrals" },
+                                { name: "Schedulers", type: "role", description: "Book appointments" },
+                                { name: "Insurance Staff", type: "role", description: "Handle prior auth & eligibility" },
+                                { name: "Practice Managers", type: "role", description: "Oversee operations" }
+                            ]
+                        },
+                        {
+                            name: "Hospice/Home\nHealth",
+                            type: "icp-secondary",
+                            description: "Strong niche - intake coordinators, clinical reviewers, ops managers",
+                            children: [
+                                { name: "Intake Coordinators", type: "role", description: "Process new patient intake" },
+                                { name: "Clinical Reviewers", type: "role", description: "Review medical necessity" },
+                                { name: "Ops Managers", type: "role", description: "Manage intake operations" }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const colors = {
+            root: { bg: '#3b82f6', text: '#ffffff', stroke: '#60a5fa' },
+            problem: { bg: '#ef4444', text: '#ffffff', stroke: '#f87171' },
+            issue: { bg: '#dc2626', text: '#ffffff', stroke: '#ef4444' },
+            solution: { bg: '#10b981', text: '#ffffff', stroke: '#34d399' },
+            feature: { bg: '#059669', text: '#ffffff', stroke: '#10b981' },
+            subfeature: { bg: '#047857', text: '#ffffff', stroke: '#059669' },
+            users: { bg: '#8b5cf6', text: '#ffffff', stroke: '#a78bfa' },
+            'icp-primary': { bg: '#7c3aed', text: '#ffffff', stroke: '#8b5cf6' },
+            'icp-secondary': { bg: '#6d28d9', text: '#ffffff', stroke: '#7c3aed' },
+            role: { bg: '#5b21b6', text: '#ffffff', stroke: '#6d28d9' }
+        };
+
+        const svg = document.getElementById('mindmap');
+        const tooltip = document.getElementById('tooltip');
+        let animationEnabled = true;
+
+        function createMindMap() {
+            const width = 1400;
+            const height = 800;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            svg.appendChild(g);
+
+            function calculatePositions(node, x, y, level, angle, angleSpan, parentAngle) {
+                node.x = x;
+                node.y = y;
+                node.level = level;
+                node.expanded = true;
+
+                if (!node.children || node.children.length === 0) return;
+
+                const radius = level === 1 ? 250 : level === 2 ? 180 : 140;
+                const childAngleSpan = angleSpan / node.children.length;
+
+                node.children.forEach((child, i) => {
+                    const childAngle = angle - angleSpan / 2 + childAngleSpan * (i + 0.5);
+                    const childX = x + radius * Math.cos(childAngle);
+                    const childY = y + radius * Math.sin(childAngle);
+                    calculatePositions(child, childX, childY, level + 1, childAngle, childAngleSpan, angle);
+                });
+            }
+
+            calculatePositions(data, centerX, centerY, 0, 0, Math.PI * 2, 0);
+
+            function drawConnections(node) {
+                if (!node.children || !node.expanded) return;
+
+                node.children.forEach(child => {
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const midX = (node.x + child.x) / 2;
+                    const midY = (node.y + child.y) / 2;
+                    const d = `M ${node.x} ${node.y} Q ${midX} ${midY} ${child.x} ${child.y}`;
+                    
+                    path.setAttribute('d', d);
+                    path.setAttribute('class', 'link');
+                    path.setAttribute('stroke', colors[child.type].stroke);
+                    g.appendChild(path);
+
+                    drawConnections(child);
+                });
+            }
+
+            function drawNodes(node) {
+                const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                nodeGroup.setAttribute('class', 'node');
+                nodeGroup.setAttribute('transform', `translate(${node.x}, ${node.y})`);
+
+                const size = node.level === 0 ? 100 : node.level === 1 ? 80 : node.level === 2 ? 70 : 60;
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('class', 'node-bg');
+                rect.setAttribute('x', -size / 2);
+                rect.setAttribute('y', -size / 2);
+                rect.setAttribute('width', size);
+                rect.setAttribute('height', size);
+                rect.setAttribute('rx', 12);
+                rect.setAttribute('fill', colors[node.type].bg);
+                rect.setAttribute('stroke', colors[node.type].stroke);
+                rect.setAttribute('stroke-width', 2);
+                
+                if (animationEnabled && node.level === 0) {
+                    rect.setAttribute('class', 'node-bg pulsing');
+                }
+
+                nodeGroup.appendChild(rect);
+
+                const lines = node.name.split('\n');
+                const fontSize = node.level === 0 ? 16 : node.level === 1 ? 14 : node.level === 2 ? 12 : 11;
+                const lineHeight = fontSize + 2;
+                const startY = -(lines.length - 1) * lineHeight / 2;
+
+                lines.forEach((line, i) => {
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('class', 'node-text');
+                    text.setAttribute('x', 0);
+                    text.setAttribute('y', startY + i * lineHeight);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('dominant-baseline', 'middle');
+                    text.setAttribute('fill', colors[node.type].text);
+                    text.setAttribute('font-size', fontSize);
+                    text.textContent = line;
+                    nodeGroup.appendChild(text);
+                });
+
+                nodeGroup.addEventListener('mouseenter', (e) => {
+                    tooltip.innerHTML = `<h3>${node.name.replace(/\n/g, ' ')}</h3><p>${node.description || ''}</p>`;
+                    tooltip.classList.add('visible');
+                });
+
+                nodeGroup.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = (e.clientX + 20) + 'px';
+                    tooltip.style.top = (e.clientY + 20) + 'px';
+                });
+
+                nodeGroup.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('visible');
+                });
+
+                g.appendChild(nodeGroup);
+
+                if (node.children && node.expanded) {
+                    node.children.forEach(child => drawNodes(child));
+                }
+            }
+
+            drawConnections(data);
+            drawNodes(data);
+        }
+
+        function expandAll() {
+            document.querySelector('.controls .btn.active')?.classList.remove('active');
+            event.target.classList.add('active');
+            svg.innerHTML = '';
+            createMindMap();
+        }
+
+        function collapseAll() {
+            document.querySelector('.controls .btn.active')?.classList.remove('active');
+            event.target.classList.add('active');
+            // Simplified view - only show first level
+            svg.innerHTML = '';
+            const simplified = { ...data, children: data.children.map(c => ({ ...c, children: [] })) };
+            createMindMap();
+        }
+
+        function resetView() {
+            svg.innerHTML = '';
+            createMindMap();
+        }
+
+        function toggleAnimation() {
+            animationEnabled = !animationEnabled;
+            resetView();
+        }
+
+        createMindMap();
+    </script>
+</body>
+</html>
