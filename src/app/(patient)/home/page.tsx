@@ -19,65 +19,79 @@ import { formatDate, getRelativeTime, STATUS_CONFIG, RISK_CONFIG } from '@/lib/u
 import { ReferralStatus, RiskLevel } from '@/types';
 
 export default async function PatientHomePage() {
-    // DEMO MODE: Hardcoded demo data for the patient (Jane Doe)
-    const profile = { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', role: 'patient', full_name: 'Jane Doe' };
+    const supabase = await createServerSupabaseClient();
 
-    // Demo referrals for the patient
-    const referrals = [
-        {
-            id: 'ref-p1',
-            status: 'APPOINTMENT_BOOKED',
-            risk_level: 'LOW',
-            specialist_type: 'Cardiology',
-            clinical_summary: 'Annual cardiac checkup and stress test evaluation. Patient has family history of heart disease.',
-            doctor: { full_name: 'Sarah Mitchell' },
-            created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            booking: { booked_slot_start_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), specialist_name: 'Dr. Robert Chen' }
-        },
-        {
-            id: 'ref-p2',
-            status: 'PATIENT_ACTION_NEEDED',
-            risk_level: 'MEDIUM',
-            specialist_type: 'Gastroenterology',
-            clinical_summary: 'Follow-up for recurring digestive issues. Patient needs to select preferred appointment time.',
-            doctor: { full_name: 'Sarah Mitchell' },
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            booking: null
-        },
-        {
-            id: 'ref-p3',
-            status: 'ELIGIBILITY_VERIFIED',
-            risk_level: 'LOW',
-            specialist_type: 'Dermatology',
-            clinical_summary: 'Annual skin check and mole evaluation. Insurance verified, scheduling in progress.',
-            doctor: { full_name: 'Sarah Mitchell' },
-            created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-            booking: null
-        },
-        {
-            id: 'ref-p4',
-            status: 'APPOINTMENT_BOOKED',
-            risk_level: 'LOW',
-            specialist_type: 'Ophthalmology',
-            clinical_summary: 'Comprehensive eye exam. Vision prescription update needed.',
-            doctor: { full_name: 'Sarah Mitchell' },
-            created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-            booking: { booked_slot_start_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(), specialist_name: 'Dr. Lisa Wang' }
-        },
-    ];
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
-    // Demo unread messages count
-    const unreadCount = 2;
+    if (!user) {
+        // If not logged in, redirect to login
+        redirect('/login');
+    }
+
+    // Get user profile
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, role, full_name')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile) {
+        return (
+            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Profile not found
+                </h3>
+                <p className="text-gray-500">
+                    Please contact support to set up your account
+                </p>
+            </div>
+        );
+    }
+
+    // Fetch patient referrals
+    const { data: referrals, error } = await supabase
+        .from('referrals')
+        .select(
+            `
+                *,
+                doctor:profiles!referrals_doctor_id_fkey(full_name),
+                booking:bookings(*)
+            `
+        )
+        .eq('patient_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching referrals:', error);
+        return (
+            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Error loading referrals
+                </h3>
+                <p className="text-gray-500">
+                    Unable to load referrals. Please try again later.
+                </p>
+            </div>
+        );
+    }
+
+    // Count unread messages (this would require a separate query to chat_messages table)
+    // For now, we'll set it to 0, but in a real implementation you'd query for unread messages
+    const unreadCount = 0; // Placeholder - would need to implement actual unread message counting
 
     // Get action-needed referrals
-    const actionNeeded = referrals.filter((r) =>
+    const actionNeeded = referrals?.filter((r) =>
         ['PATIENT_ACTION_NEEDED', 'FOLLOW_UP_DUE', 'REFERRAL_SENT'].includes(r.status)
-    );
+    ) || [];
 
-    const upcomingAppointments = referrals.filter((r) =>
+    const upcomingAppointments = referrals?.filter((r) =>
         r.booking?.booked_slot_start_at &&
         new Date(r.booking.booked_slot_start_at) > new Date()
-    );
+    ) || [];
 
     return (
         <div className="space-y-6">

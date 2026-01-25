@@ -91,111 +91,132 @@ export interface EligibilityCheckParams {
 export async function checkEligibility(
   params: EligibilityCheckParams
 ): Promise<EligibilityCheckResponse> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  // Use configurable timeout with default of 5000ms (5 seconds)
+  const timeoutMs = parseInt(process.env.INSURANCE_API_TIMEOUT_MS || '5000');
 
-  // Simulate different scenarios based on member_id patterns
-  const memberId = params.member_id.toUpperCase();
+  // Create a promise that resolves with the actual API call
+  const apiCallPromise = new Promise<EligibilityCheckResponse>((resolve) => {
+    // Simulate API delay
+    setTimeout(() => {
+      // Simulate different scenarios based on member_id patterns
+      const memberId = params.member_id.toUpperCase();
 
-  // Expired coverage pattern
-  if (memberId.includes('EXPIRED') || memberId.includes('TERM')) {
-    return {
-      status: 'INACTIVE',
-      network_status: 'UNKNOWN',
-      coverage_active: false,
-      checked_at: new Date().toISOString(),
-      prior_auth_required: false,
-      benefits: {
-        termination_reason: 'COVERAGE_ENDED',
-        termination_date: '2024-12-31',
-      },
-    };
-  }
+      // Expired coverage pattern
+      if (memberId.includes('EXPIRED') || memberId.includes('TERM')) {
+        resolve({
+          status: 'INACTIVE',
+          network_status: 'UNKNOWN',
+          coverage_active: false,
+          checked_at: new Date().toISOString(),
+          prior_auth_required: false,
+          benefits: {
+            termination_reason: 'COVERAGE_ENDED',
+            termination_date: '2024-12-31',
+          },
+        });
+        return;
+      }
 
-  // Out-of-network pattern
-  if (memberId.includes('OON') || params.payer_id === 'AETNA') {
-    const isInNetwork = Math.random() > 0.3; // 70% in-network
-    return {
-      status: 'ACTIVE',
-      network_status: isInNetwork ? 'IN_NETWORK' : 'OUT_OF_NETWORK',
-      coverage_active: true,
-      patient_responsibility_estimate: isInNetwork ? 50 : 2500,
-      checked_at: new Date().toISOString(),
-      prior_auth_required: checkPriorAuthRequired(params.payer_id, params.service_codes || []),
-      benefits: {
-        deductible_met: true,
-        out_of_pocket_max: 6500,
-        copay_specialist: isInNetwork ? 40 : 100,
-        coinsurance: isInNetwork ? 20 : 40,
-      },
-    };
-  }
+      // Out-of-network pattern
+      if (memberId.includes('OON') || params.payer_id === 'AETNA') {
+        const isInNetwork = Math.random() > 0.3; // 70% in-network
+        resolve({
+          status: 'ACTIVE',
+          network_status: isInNetwork ? 'IN_NETWORK' : 'OUT_OF_NETWORK',
+          coverage_active: true,
+          patient_responsibility_estimate: isInNetwork ? 50 : 2500,
+          checked_at: new Date().toISOString(),
+          prior_auth_required: checkPriorAuthRequired(params.payer_id, params.service_codes || []),
+          benefits: {
+            deductible_met: true,
+            out_of_pocket_max: 6500,
+            copay_specialist: isInNetwork ? 40 : 100,
+            coinsurance: isInNetwork ? 20 : 40,
+          },
+        });
+        return;
+      }
 
-  // Medicaid pattern (usually active, low cost)
-  if (params.insurance_type === 'MEDICAID') {
-    return {
-      status: 'ACTIVE',
-      network_status: 'IN_NETWORK',
-      coverage_active: true,
-      patient_responsibility_estimate: 0,
-      checked_at: new Date().toISOString(),
-      prior_auth_required: checkPriorAuthRequired(params.payer_id, params.service_codes || []),
-      benefits: {
-        copay_specialist: 0,
-        copay_primary: 0,
-        covered_services: ['ALL'],
-      },
-    };
-  }
+      // Medicaid pattern (usually active, low cost)
+      if (params.insurance_type === 'MEDICAID') {
+        resolve({
+          status: 'ACTIVE',
+          network_status: 'IN_NETWORK',
+          coverage_active: true,
+          patient_responsibility_estimate: 0,
+          checked_at: new Date().toISOString(),
+          prior_auth_required: checkPriorAuthRequired(params.payer_id, params.service_codes || []),
+          benefits: {
+            copay_specialist: 0,
+            copay_primary: 0,
+            covered_services: ['ALL'],
+          },
+        });
+        return;
+      }
 
-  // Medicare pattern
-  if (params.insurance_type === 'MEDICARE' || params.insurance_type === 'MEDICARE_ADVANTAGE') {
-    return {
-      status: 'ACTIVE',
-      network_status: 'IN_NETWORK',
-      coverage_active: true,
-      patient_responsibility_estimate: 20,
-      checked_at: new Date().toISOString(),
-      prior_auth_required: params.insurance_type === 'MEDICARE_ADVANTAGE' &&
-        checkPriorAuthRequired(params.payer_id, params.service_codes || []),
-      benefits: {
-        part_b_deductible_met: true,
-        coinsurance: 20,
-      },
-    };
-  }
+      // Medicare pattern
+      if (params.insurance_type === 'MEDICARE' || params.insurance_type === 'MEDICARE_ADVANTAGE') {
+        resolve({
+          status: 'ACTIVE',
+          network_status: 'IN_NETWORK',
+          coverage_active: true,
+          patient_responsibility_estimate: 20,
+          checked_at: new Date().toISOString(),
+          prior_auth_required: params.insurance_type === 'MEDICARE_ADVANTAGE' &&
+            checkPriorAuthRequired(params.payer_id, params.service_codes || []),
+          benefits: {
+            part_b_deductible_met: true,
+            coinsurance: 20,
+          },
+        });
+        return;
+      }
 
-  // Self-pay pattern
-  if (params.insurance_type === 'SELF_PAY') {
-    return {
-      status: 'UNKNOWN',
-      network_status: 'UNKNOWN',
-      coverage_active: false,
-      patient_responsibility_estimate: 850, // Full self-pay amount
-      checked_at: new Date().toISOString(),
-      prior_auth_required: false,
-      benefits: {
-        self_pay_discount_available: true,
-        payment_plan_available: true,
-      },
-    };
-  }
+      // Self-pay pattern
+      if (params.insurance_type === 'SELF_PAY') {
+        resolve({
+          status: 'UNKNOWN',
+          network_status: 'UNKNOWN',
+          coverage_active: false,
+          patient_responsibility_estimate: 850, // Full self-pay amount
+          checked_at: new Date().toISOString(),
+          prior_auth_required: false,
+          benefits: {
+            self_pay_discount_available: true,
+            payment_plan_available: true,
+          },
+        });
+        return;
+      }
 
-  // Default commercial insurance (active, in-network)
-  return {
-    status: 'ACTIVE',
-    network_status: 'IN_NETWORK',
-    coverage_active: true,
-    patient_responsibility_estimate: 50,
-    checked_at: new Date().toISOString(),
-    prior_auth_required: checkPriorAuthRequired(params.payer_id, params.service_codes || []),
-    benefits: {
-      deductible_met: true,
-      copay_specialist: 40,
-      copay_primary: 25,
-      coinsurance: 20,
-    },
-  };
+      // Default commercial insurance (active, in-network)
+      resolve({
+        status: 'ACTIVE',
+        network_status: 'IN_NETWORK',
+        coverage_active: true,
+        patient_responsibility_estimate: 50,
+        checked_at: new Date().toISOString(),
+        prior_auth_required: checkPriorAuthRequired(params.payer_id, params.service_codes || []),
+        benefits: {
+          deductible_met: true,
+          copay_specialist: 40,
+          copay_primary: 25,
+          coinsurance: 20,
+        },
+      });
+    }, Math.min(timeoutMs, 500)); // Use the minimum of timeout or the simulated delay
+  });
+
+  // Create a timeout promise
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`Insurance verification API call timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  // Race the API call against the timeout
+  return Promise.race([apiCallPromise, timeoutPromise]);
 }
 
 // =============================================================================

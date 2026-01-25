@@ -16,49 +16,125 @@ import { formatDate, getRelativeTime, STATUS_CONFIG, RISK_CONFIG } from '@/lib/u
 import { ReferralStatus, RiskLevel } from '@/types';
 
 export default async function DoctorDashboard() {
-  // DEMO MODE: Use hardcoded demo data for hackathon presentation
+  const supabase = await createServerSupabaseClient();
 
-  // Demo referrals data with various statuses and risk levels
-  const demoReferrals = [
-    { id: 'ref-001', status: 'CREATED', risk_level: 'CRITICAL', specialist_type: 'Hospice Care', patient: { full_name: 'Margaret Johnson' }, created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), follow_up_due_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString() },
-    { id: 'ref-002', status: 'PRIOR_AUTH_REQUIRED', risk_level: 'HIGH', specialist_type: 'Cardiology', patient: { full_name: 'Robert Williams' }, created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), follow_up_due_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() },
-    { id: 'ref-003', status: 'APPOINTMENT_BOOKED', risk_level: 'LOW', specialist_type: 'Orthopedics', patient: { full_name: 'Sarah Chen' }, created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() },
-    { id: 'ref-004', status: 'NEEDS_REVIEW', risk_level: 'HIGH', specialist_type: 'Oncology', patient: { full_name: 'James Wilson' }, created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), follow_up_due_at: new Date(Date.now() - 30 * 60 * 1000).toISOString() },
-    { id: 'ref-005', status: 'SCHEDULING', risk_level: 'MEDIUM', specialist_type: 'Gastroenterology', patient: { full_name: 'Maria Garcia' }, created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString() },
-    { id: 'ref-006', status: 'APPOINTMENT_BOOKED', risk_level: 'MEDIUM', specialist_type: 'Dermatology', patient: { full_name: 'David Lee' }, created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString() },
-    { id: 'ref-007', status: 'ELIGIBILITY_VERIFIED', risk_level: 'LOW', specialist_type: 'Pulmonology', patient: { full_name: 'Emily Brown' }, created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
-    { id: 'ref-008', status: 'PRIOR_AUTH_REQUIRED', risk_level: 'CRITICAL', specialist_type: 'Neurology', patient: { full_name: 'Michael Thompson' }, created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), follow_up_due_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() },
-    { id: 'ref-009', status: 'APPOINTMENT_BOOKED', risk_level: 'LOW', specialist_type: 'Endocrinology', patient: { full_name: 'Jennifer Davis' }, created_at: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString() },
-    { id: 'ref-010', status: 'SCHEDULING', risk_level: 'MEDIUM', specialist_type: 'Rheumatology', patient: { full_name: 'William Anderson' }, created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString() },
-    { id: 'ref-011', status: 'NEEDS_REVIEW', risk_level: 'CRITICAL', specialist_type: 'Nephrology', patient: { full_name: 'Elizabeth Martinez' }, created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), follow_up_due_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-    { id: 'ref-012', status: 'CREATED', risk_level: 'HIGH', specialist_type: 'Psychiatry', patient: { full_name: 'Christopher Taylor' }, created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString() },
-  ];
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Calculate demo stats
-  const totalReferrals = demoReferrals.length;
-  const pendingReferrals = demoReferrals.filter(r => !['APPOINTMENT_BOOKED', 'APPOINTMENT_COMPLETED', 'CLOSED_DECLINED'].includes(r.status)).length;
-  const bookedReferrals = demoReferrals.filter(r => r.status === 'APPOINTMENT_BOOKED').length;
+  if (!user) {
+    // If not logged in, return empty state
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Dashboard
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Overview of your referral activity
+            </p>
+          </div>
+          <Button className="gap-2" disabled>
+            <FileText className="w-4 h-4" />
+            New Referral
+          </Button>
+        </div>
+
+        <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+          <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Please log in to view dashboard
+          </h3>
+          <p className="text-gray-500">
+            Sign in to access your referral dashboard
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Get user profile to determine role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile) {
+    return (
+      <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+        <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          Profile not found
+        </h3>
+        <p className="text-gray-500">
+          Please contact support to set up your account
+        </p>
+      </div>
+    );
+  }
+
+  // Fetch referrals based on role
+  let query = supabase
+    .from('referrals')
+    .select(
+      `
+        *,
+        patient:profiles!referrals_patient_id_fkey(id, full_name, email, phone)
+      `
+    )
+    .order('created_at', { ascending: false });
+
+  if (profile.role === 'doctor') {
+    query = query.eq('doctor_id', user.id);
+  } else if (profile.role === 'patient') {
+    query = query.eq('patient_id', user.id);
+  }
+  // Staff can see all referrals (no filter needed)
+
+  const { data: referrals, error } = await query;
+
+  if (error) {
+    console.error('Error fetching referrals:', error);
+    return (
+      <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+        <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          Error loading dashboard
+        </h3>
+        <p className="text-gray-500">
+          Unable to load referrals. Please try again later.
+        </p>
+      </div>
+    );
+  }
+
+  // Calculate stats
+  const totalReferrals = referrals?.length || 0;
+  const pendingReferrals = referrals?.filter(r => !['APPOINTMENT_BOOKED', 'APPOINTMENT_COMPLETED', 'CLOSED_DECLINED', 'CLOSED_INCOMPLETE', 'CLOSED_REDIRECTED'].includes(r.status)).length || 0;
+  const bookedReferrals = referrals?.filter(r => r.status === 'APPOINTMENT_BOOKED').length || 0;
 
   // Follow-ups due (referrals with follow_up_due_at in the past)
-  const followUpsDue = demoReferrals
-    .filter(r => r.follow_up_due_at && new Date(r.follow_up_due_at) <= new Date())
+  const followUpsDue = referrals
+    ?.filter(r => r.follow_up_due_at && new Date(r.follow_up_due_at) <= new Date())
     .sort((a, b) => new Date(a.follow_up_due_at!).getTime() - new Date(b.follow_up_due_at!).getTime())
-    .slice(0, 5);
+    .slice(0, 5) || [];
 
   // Recent referrals (sorted by created_at)
-  const recentReferrals = [...demoReferrals]
+  const recentReferrals = [...(referrals || [])]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 5);
 
   // Calculate risk counts
-  const riskCounts = demoReferrals.reduce(
+  const riskCounts = referrals?.reduce(
     (acc, ref) => {
       const level = ref.risk_level as RiskLevel;
       acc[level] = (acc[level] || 0) + 1;
       return acc;
     },
     {} as Partial<Record<RiskLevel, number>>
-  );
+  ) || {};
 
   const criticalCount = riskCounts.CRITICAL || 0;
   const highRiskCount = riskCounts.HIGH || 0;

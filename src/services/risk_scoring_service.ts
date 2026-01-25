@@ -11,19 +11,19 @@ import { addDays } from '@/lib/utils';
 // =============================================================================
 
 const INSURANCE_TYPE_WEIGHTS: Record<string, number> = {
-  MEDICAID: 0.20,
-  SELF_PAY: 0.25,
-  MEDICARE_ADVANTAGE: 0.12,
-  MEDICARE: 0.10,
-  COMMERCIAL: 0.05,
-  OTHER: 0.15,
+  MEDICAID: parseFloat(process.env.RISK_FACTOR_MEDICAID || '0.20'),
+  SELF_PAY: parseFloat(process.env.RISK_FACTOR_SELF_PAY || '0.25'),
+  MEDICARE_ADVANTAGE: parseFloat(process.env.RISK_FACTOR_MEDICARE_ADVANTAGE || '0.12'),
+  MEDICARE: parseFloat(process.env.RISK_FACTOR_MEDICARE || '0.10'),
+  COMMERCIAL: parseFloat(process.env.RISK_FACTOR_COMMERCIAL || '0.05'),
+  OTHER: parseFloat(process.env.RISK_FACTOR_OTHER || '0.15'),
 };
 
 const DAYS_SINCE_CREATION_WEIGHTS = [
-  { days: 14, weight: 0.35 },
-  { days: 10, weight: 0.25 },
-  { days: 5, weight: 0.15 },
-  { days: 2, weight: 0.10 },
+  { days: 14, weight: parseFloat(process.env.RISK_FACTOR_DAYS_14 || '0.35') },
+  { days: 10, weight: parseFloat(process.env.RISK_FACTOR_DAYS_10 || '0.25') },
+  { days: 5, weight: parseFloat(process.env.RISK_FACTOR_DAYS_5 || '0.15') },
+  { days: 2, weight: parseFloat(process.env.RISK_FACTOR_DAYS_2 || '0.10') },
 ];
 
 // =============================================================================
@@ -31,10 +31,10 @@ const DAYS_SINCE_CREATION_WEIGHTS = [
 // =============================================================================
 
 const RISK_THRESHOLDS: { min: number; level: RiskLevel }[] = [
-  { min: 0.70, level: 'CRITICAL' },
-  { min: 0.50, level: 'HIGH' },
-  { min: 0.30, level: 'MEDIUM' },
-  { min: 0.00, level: 'LOW' },
+  { min: parseFloat(process.env.RISK_THRESHOLD_CRITICAL || '0.70'), level: 'CRITICAL' },
+  { min: parseFloat(process.env.RISK_THRESHOLD_HIGH || '0.50'), level: 'HIGH' },
+  { min: parseFloat(process.env.RISK_THRESHOLD_MEDIUM || '0.30'), level: 'MEDIUM' },
+  { min: parseFloat(process.env.RISK_THRESHOLD_LOW || '0.00'), level: 'LOW' },
 ];
 
 // =============================================================================
@@ -65,6 +65,17 @@ export interface RiskCalculationResult {
  * Uses transparent, rule-based scoring
  */
 export function calculateRiskScore(referral: Referral): RiskCalculationResult {
+  // Validate input parameters to prevent unexpected behavior
+  if (!referral || !referral.created_at) {
+    throw new Error('Invalid referral object: missing required fields');
+  }
+
+  // Validate dates to prevent NaN calculations
+  const createdAtDate = new Date(referral.created_at);
+  if (isNaN(createdAtDate.getTime())) {
+    throw new Error('Invalid created_at date in referral object');
+  }
+
   const factors: RiskFactors = {};
   let totalScore = 0;
 
@@ -142,8 +153,13 @@ export function calculateRiskScore(referral: Referral): RiskCalculationResult {
     totalScore += 0.35;
   }
 
-  // Cap at 1.0
-  const risk_score = Math.min(1.0, totalScore);
+  // Cap at 1.0 to ensure risk score is within valid range
+  const risk_score = Math.min(1.0, Math.max(0, totalScore));
+
+  // Validate the calculated risk score is within expected bounds
+  if (risk_score < 0 || risk_score > 1.0) {
+    console.warn(`Calculated risk score out of bounds: ${risk_score}. Capping to valid range [0, 1].`);
+  }
 
   // Determine risk level
   const risk_level = getRiskLevel(risk_score);

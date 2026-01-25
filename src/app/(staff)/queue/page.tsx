@@ -42,121 +42,86 @@ interface PageProps {
 }
 
 export default async function StaffQueuePage({ searchParams }: PageProps) {
-    // DEMO MODE: Hardcoded demo tasks for hackathon presentation
-    const demoTasks = [
-        {
-            id: 'task-001',
-            task_type: 'HOSPICE_URGENT_INTAKE',
-            priority: 'CRITICAL',
-            status: 'PENDING',
-            instructions: 'STAT HOSPICE REFERRAL - Patient requires immediate intake within 24 hours. Medicare hospice benefit verification needed.',
-            sla_hours: 24,
-            sla_due_at: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            referral: { id: 'ref-001', specialist_type: 'Hospice Care', urgency_level: 'STAT', status: 'CREATED', payer_name: 'Medicare', patient: { full_name: 'Margaret Johnson', phone: '555-234-5678', email: 'margaret.j@email.com' } },
-            assignee: null
-        },
-        {
-            id: 'task-002',
-            task_type: 'SUBMIT_PRIOR_AUTH',
-            priority: 'HIGH',
-            status: 'IN_PROGRESS',
-            instructions: 'Submit prior authorization request for cardiology consultation. Patient has existing cardiac history.',
-            sla_hours: 48,
-            sla_due_at: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-            referral: { id: 'ref-002', specialist_type: 'Cardiology', urgency_level: 'URGENT', status: 'PRIOR_AUTH_REQUIRED', payer_name: 'Aetna PPO', patient: { full_name: 'Robert Williams', phone: '555-345-6789', email: 'rwilliams@email.com' } },
-            assignee: { full_name: 'Alex Rivera' }
-        },
-        {
-            id: 'task-003',
-            task_type: 'MANUAL_SCHEDULING',
-            priority: 'MEDIUM',
-            status: 'PENDING',
-            instructions: 'Schedule orthopedic consultation. Patient prefers morning appointments.',
-            sla_hours: 72,
-            sla_due_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            referral: { id: 'ref-003', specialist_type: 'Orthopedics', urgency_level: 'ROUTINE', status: 'SCHEDULING', payer_name: 'Blue Cross', patient: { full_name: 'Sarah Chen', phone: '555-456-7890', email: 'schen@email.com' } },
-            assignee: null
-        },
-        {
-            id: 'task-004',
-            task_type: 'DOCUMENT_REVIEW',
-            priority: 'HIGH',
-            status: 'PENDING',
-            instructions: 'Review oncology referral documentation. Verify all required clinical notes are present.',
-            sla_hours: 24,
-            sla_due_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // Overdue!
-            created_at: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
-            referral: { id: 'ref-004', specialist_type: 'Oncology', urgency_level: 'URGENT', status: 'NEEDS_REVIEW', payer_name: 'UnitedHealthcare', patient: { full_name: 'James Wilson', phone: '555-567-8901', email: 'jwilson@email.com' } },
-            assignee: null
-        },
-        {
-            id: 'task-005',
-            task_type: 'MANUAL_PATIENT_OUTREACH',
-            priority: 'MEDIUM',
-            status: 'PENDING',
-            instructions: 'Contact patient to confirm availability for gastroenterology appointment.',
-            sla_hours: 48,
-            sla_due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-            referral: { id: 'ref-005', specialist_type: 'Gastroenterology', urgency_level: 'ROUTINE', status: 'SCHEDULING', payer_name: 'Cigna', patient: { full_name: 'Maria Garcia', phone: '555-678-9012', email: 'mgarcia@email.com' } },
-            assignee: { full_name: 'Sam Thompson' }
-        },
-        {
-            id: 'task-006',
-            task_type: 'SUBMIT_PRIOR_AUTH',
-            priority: 'CRITICAL',
-            status: 'PENDING',
-            instructions: 'URGENT: Prior auth needed for neurology MRI. Suspected MS symptoms.',
-            sla_hours: 12,
-            sla_due_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-            referral: { id: 'ref-008', specialist_type: 'Neurology', urgency_level: 'STAT', status: 'PRIOR_AUTH_REQUIRED', payer_name: 'Anthem', patient: { full_name: 'Michael Thompson', phone: '555-789-0123', email: 'mthompson@email.com' } },
-            assignee: null
-        },
-        {
-            id: 'task-007',
-            task_type: 'INSURANCE_VERIFICATION',
-            priority: 'LOW',
-            status: 'PENDING',
-            instructions: 'Verify insurance eligibility for routine dermatology visit.',
-            sla_hours: 72,
-            sla_due_at: new Date(Date.now() + 60 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-            referral: { id: 'ref-006', specialist_type: 'Dermatology', urgency_level: 'ROUTINE', status: 'ELIGIBILITY_VERIFIED', payer_name: 'Humana', patient: { full_name: 'David Lee', phone: '555-890-1234', email: 'dlee@email.com' } },
-            assignee: null
-        },
-    ];
+    const supabase = await createServerSupabaseClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        // If not logged in, redirect to login
+        redirect('/login');
+    }
+
+    // Get user profile to determine role
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || profile.role !== 'staff') {
+        // If not a staff member, redirect
+        redirect('/login');
+    }
+
+    // Build query for staff tasks
+    let query = supabase
+        .from('staff_scheduling_tasks')
+        .select(
+            `
+                *,
+                referral:referrals(
+                    id,
+                    specialist_type,
+                    urgency_level,
+                    status,
+                    payer_name,
+                    patient:profiles!referrals_patient_id_fkey(full_name, phone, email)
+                ),
+                assignee:profiles!staff_scheduling_tasks_assigned_to_fkey(full_name)
+            `
+        )
+        .order('created_at', { ascending: false });
 
     // Apply filters
-    let tasks = [...demoTasks];
-
     if (searchParams.status) {
-        if (searchParams.status === 'COMPLETED') {
-            tasks = []; // No completed demo tasks
-        } else {
-            tasks = tasks.filter(t => t.status === searchParams.status);
-        }
+        query = query.eq('status', searchParams.status);
     } else {
         // Default: show pending and in-progress
-        tasks = tasks.filter(t => ['PENDING', 'IN_PROGRESS'].includes(t.status));
+        query = query.in('status', ['PENDING', 'IN_PROGRESS']);
     }
 
     if (searchParams.priority) {
-        tasks = tasks.filter(t => t.priority === searchParams.priority);
+        query = query.eq('priority', searchParams.priority);
     }
 
     if (searchParams.type) {
-        tasks = tasks.filter(t => t.task_type === searchParams.type);
+        query = query.eq('task_type', searchParams.type);
     }
 
-    // Calculate stats from all demo tasks (not filtered)
+    const { data: tasks, error } = await query;
+
+    if (error) {
+        console.error('Error fetching tasks:', error);
+        return (
+            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Error loading tasks
+                </h3>
+                <p className="text-gray-500">
+                    Unable to load tasks. Please try again later.
+                </p>
+            </div>
+        );
+    }
+
+    // Calculate stats from all tasks (not filtered)
     const stats = {
-        pending: demoTasks.filter(t => t.status === 'PENDING').length,
-        inProgress: demoTasks.filter(t => t.status === 'IN_PROGRESS').length,
-        critical: demoTasks.filter(t => t.priority === 'CRITICAL').length,
+        pending: tasks?.filter(t => t.status === 'PENDING').length || 0,
+        inProgress: tasks?.filter(t => t.status === 'IN_PROGRESS').length || 0,
+        critical: tasks?.filter(t => t.priority === 'CRITICAL').length || 0,
     };
 
     return (

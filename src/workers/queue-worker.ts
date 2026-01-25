@@ -313,15 +313,15 @@ const riskWorker = createWorker({
     const supabase = createAdminSupabaseClient();
 
     try {
-      // Get referral
-      const { data: referral } = await supabase
+      // Get referral with updated_at to implement optimistic locking
+      const { data: referral, error } = await supabase
         .from('referrals')
-        .select('*')
+        .select('*, updated_at')
         .eq('id', referral_id)
         .single();
 
-      if (!referral) {
-        throw new Error('Referral not found');
+      if (error || !referral) {
+        throw new Error(`Referral not found: ${error?.message}`);
       }
 
       // Calculate risk
@@ -332,16 +332,24 @@ const riskWorker = createWorker({
         riskResult.risk_level !== referral.risk_level &&
         ['HIGH', 'CRITICAL'].includes(riskResult.risk_level);
 
-      // Update referral
-      await supabase
+      // Use optimistic locking to prevent race conditions
+      // Only update if the record hasn't been modified since we read it
+      const { error: updateError } = await supabase
         .from('referrals')
         .update({
           risk_score: riskResult.risk_score,
           risk_level: riskResult.risk_level,
           risk_factors: riskResult.risk_factors,
           follow_up_due_at: riskResult.follow_up_due_at.toISOString(),
+          updated_at: new Date().toISOString(), // Update timestamp to reflect this change
         })
-        .eq('id', referral_id);
+        .eq('id', referral_id)
+        .eq('updated_at', referral.updated_at); // Optimistic locking condition
+
+      if (updateError) {
+        console.warn(`Risk calculation update failed due to concurrent modification for referral: ${referral_id}`);
+        throw new Error(`Concurrent modification detected for referral ${referral_id}. Operation aborted to prevent inconsistent state.`);
+      }
 
       // Log escalation if needed
       if (riskEscalated) {
