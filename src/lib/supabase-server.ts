@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Supabase Server-side Configuration
+// NEXUS HEALTH - Supabase Server-side Configuration
 // These exports use next/headers and can ONLY be used in server contexts
 // =============================================================================
 

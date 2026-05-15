@@ -41,3 +41,8 @@ next-env.d.ts
 # Misc
 *.log
 *.cache
+*.backup
+__pycache__/
+*.pyc
+*.pyo
+.claude/fix-journal.jsonl

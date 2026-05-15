@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Supabase Client Configuration (Client-safe exports)
+// NEXUS HEALTH - Supabase Client Configuration (Client-safe exports)
 // =============================================================================
 
 import { createBrowserClient } from '@supabase/ssr';

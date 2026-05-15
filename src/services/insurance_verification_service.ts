@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Insurance Verification Service
+// NEXUS HEALTH - Insurance Verification Service
 // Eligibility check and prior authorization logic
 // =============================================================================
 

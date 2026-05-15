@@ -58,4 +58,4 @@ volumes:
 
 networks:
   default:
-    name: refree_network
+    name: nexus_health_network

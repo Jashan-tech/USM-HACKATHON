@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - BullMQ Queue Worker
+// NEXUS HEALTH - BullMQ Queue Worker
 // Processes background jobs for referral management
 // =============================================================================
 
@@ -20,7 +20,7 @@ import { findEarliestSlot, createBookingData } from '../services/scheduling_agen
 import { generatePreventiveMessage, sendSystemMessage } from '../services/chat_service';
 import { canSendAutomatedMessage } from '../services/consent_service';
 
-console.log('Starting Refree Queue Worker...');
+console.log('Starting Nexus Health Queue Worker...');
 
 // =============================================================================
 // ELIGIBILITY CHECK WORKER
@@ -397,5 +397,5 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-console.log('Refree Queue Worker started successfully!');
+console.log('Nexus Health Queue Worker started successfully!');
 console.log('Listening for jobs on queues:', Object.values(QUEUE_NAMES).join(', '));

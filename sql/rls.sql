@@ -1,5 +1,5 @@
 -- =============================================================================
--- REFREE - Referral + Intake Automation MVP
+-- NEXUS HEALTH - Referral + Intake Automation MVP
 -- Row Level Security (RLS) Policies
 -- =============================================================================
 

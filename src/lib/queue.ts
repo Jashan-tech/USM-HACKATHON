@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - BullMQ Job Queue Configuration
+// NEXUS HEALTH - BullMQ Job Queue Configuration
 // =============================================================================
 
 import { Queue, Worker, Job } from 'bullmq';

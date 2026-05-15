@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Redis Client Configuration
+// NEXUS HEALTH - Redis Client Configuration
 // =============================================================================
 
 import Redis from 'ioredis';

@@ -794,7 +794,7 @@ Return in this order:
 
 ### 3. Repo Directory Structure
 ```
-refree/
+nexus-health/
 ├── docker-compose.yml
 ├── .env.example
 ├── package.json

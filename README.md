@@ -1,6 +1,6 @@
-# Refree - Referral + Intake Automation MVP
+# Nexus Health - Referral + Intake Automation MVP
 
-A closed-loop referral completion engine for healthcare practices. Refree actively drives referrals to completion with risk-based follow-ups, intelligent scheduling, and real-time tracking.
+A closed-loop referral completion engine for healthcare practices. Nexus Health actively drives referrals to completion with risk-based follow-ups, intelligent scheduling, and real-time tracking.
 
 ## Problem Statement
 
@@ -50,7 +50,7 @@ Referral and intake workflows leak because the process is manual and fragmented.
 
 ```bash
 git clone <repository-url>
-cd refree
+cd nexus-health
 npm install
 ```
 
@@ -144,7 +144,7 @@ GET /api/dev/verify-email?email=your-email@example.com
 ## Project Structure
 
 ```
-refree/
+nexus-health/
 ├── docker-compose.yml          # Docker services config
 ├── .env.example                # Environment template
 ├── sql/

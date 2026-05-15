@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Utility Functions
+// NEXUS HEALTH - Utility Functions
 // =============================================================================
 
 import { clsx, type ClassValue } from 'clsx';

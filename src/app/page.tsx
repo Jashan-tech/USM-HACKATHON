@@ -44,7 +44,7 @@ export default function DemoLandingPage() {
             <Shield className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Refree
+            Nexus Health
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-2">
             Referral + Intake Automation Platform

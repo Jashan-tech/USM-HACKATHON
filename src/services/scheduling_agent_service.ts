@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Scheduling Agent Service
+// NEXUS HEALTH - Scheduling Agent Service
 // Handles availability matching and appointment booking
 // =============================================================================
 

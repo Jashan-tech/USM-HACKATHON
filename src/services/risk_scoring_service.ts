@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Risk Scoring Service
+// NEXUS HEALTH - Risk Scoring Service
 // Transparent rule-based risk scoring engine
 // =============================================================================
 

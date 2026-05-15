@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Consent Service
+// NEXUS HEALTH - Consent Service
 // HIPAA-compliant consent tracking and verification
 // =============================================================================
 

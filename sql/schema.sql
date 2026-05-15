@@ -1,5 +1,5 @@
 -- =============================================================================
--- REFREE - Referral + Intake Automation MVP
+-- NEXUS HEALTH - Referral + Intake Automation MVP
 -- Database Schema
 -- =============================================================================
 
@@ -45,7 +45,7 @@ INSERT INTO doctor_invite_codes (code) VALUES
   ('DEMO2026'),
   ('PILOT001'),
   ('BETA123'),
-  ('REFREE01'),
+  ('NEXUS01'),
   ('HEALTH99')
 ON CONFLICT (code) DO NOTHING;
 

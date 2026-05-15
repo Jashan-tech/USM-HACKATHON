@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/components/layout/ThemeProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Refree - Referral + Intake Automation',
+  title: 'Nexus Health - Referral + Intake Automation',
   description: 'Closed-loop referral completion engine for healthcare practices',
   keywords: ['healthcare', 'referral', 'intake', 'automation', 'scheduling'],
 };

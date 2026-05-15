@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Referral + Intake Automation MVP
+// NEXUS HEALTH - Referral + Intake Automation MVP
 // TypeScript Type Definitions
 // =============================================================================
 

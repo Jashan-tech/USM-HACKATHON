@@ -1,5 +1,5 @@
 // =============================================================================
-// REFREE - Document Extraction Service
+// NEXUS HEALTH - Document Extraction Service
 // OCR and data extraction from insurance cards and documents
 // =============================================================================
 
