@@ -46,3 +46,20 @@ __pycache__/
 *.pyc
 *.pyo
 .claude/fix-journal.jsonl
+
+# Local secrets (runtime-only; examples stay tracked)
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.template
+!.env.*.template
+!.env.example.safe
+credentials.json
+secrets.json
+*.pem
+*.key
+.secrets/
+secrets/local/
+.local-secrets/
+.galaxy/secret-cache/
