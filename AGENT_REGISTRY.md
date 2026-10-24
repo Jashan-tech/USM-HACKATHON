@@ -7,3 +7,7 @@
 | 2026-07-03 01:13 UTC | Hermes GPT-5.5 | Local secret containment ignore coverage | completed | .gitignore, WORKING.lock, AGENT_REGISTRY.md |
 | 2026-07-03 01:13 UTC | Hermes GPT-5.5 | Local secret containment ignore coverage | in_progress | .gitignore, WORKING.lock, AGENT_REGISTRY.md |
 # Agent Registry for Refree
+| 2026-10-24T21:33:03.963481+00:00 | codex | Retire legacy token limits: AGENTS.md | completed   | codex-rule-retirement-20261024 |
+| 2026-10-24T21:33:46.607151+00:00 | codex | Retire legacy token limits: AGENTS.md | completed   | codex-rule-retirement-20261024 |
+| 2026-10-24T21:37:35.464781+00:00 | codex | Retire legacy token limits: AGENTS.md | completed   | codex-rule-retirement-20261024 |
+| 2026-10-24T21:40:21.766228+00:00 | codex | Retire legacy token limits: AGENTS.md | completed   | codex-rule-retirement-20261024 |
