@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -59,11 +60,19 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const [loggingOut, setLoggingOut] = useState(false);
   const supabase = createBrowserSupabaseClient();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await supabase.auth.signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      setLoggingOut(false);
+    }
   };
 
   // Define navigation items based on role
@@ -256,9 +265,9 @@ export function Sidebar({
               )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+            <DropdownMenuItem onClick={handleLogout} disabled={loggingOut} className="text-red-600">
               <LogOut className="mr-2 h-4 w-4" />
-              Log out
+              {loggingOut ? 'Logging out…' : 'Log out'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

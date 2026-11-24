@@ -1,3 +1,4 @@
+| 2026-11-24 18:12 UTC | gemini-antigravity | Add loggingOut guard and loading label to Sidebar logout item | completed | src/components/layout/Sidebar.tsx, CHANGES.md, AGENT_REGISTRY.md |
 | 2026-07-03 01:24 UTC | Hermes GPT-5.5 | Record local secret containment changelog | completed | CHANGES.md, AGENT_REGISTRY.md, WORKING.lock |
 | 2026-07-03 01:24 UTC | Hermes GPT-5.5 | Record local secret containment changelog | in_progress | CHANGES.md, AGENT_REGISTRY.md, WORKING.lock |
 | 2026-07-03 01:16 UTC | Hermes GPT-5.5 | Finish tracked secret placeholder cleanup | completed | .env.example, WORKING.lock, AGENT_REGISTRY.md |
